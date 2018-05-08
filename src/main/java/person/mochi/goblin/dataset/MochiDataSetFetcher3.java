@@ -83,8 +83,8 @@ public class MochiDataSetFetcher3 extends BaseDataFetcher {
 				negativeResults.close();
 				break;
 			}
-			byte[] bytesFeatureVec = new byte[512075];
-			float[] featureVec = new float[512075];
+			byte[] bytesFeatureVec = new byte[51275];
+			float[] featureVec = new float[51275];
 			featureData[actualExamples] = featureVec;
 			labelData[actualExamples] = new float[numOutcomes];
 

@@ -29,14 +29,14 @@ public class MochiDataSetFetcher2 extends BaseDataFetcher {
 	private Results positiveResults;
 	private Results negativeResults;
 	private int negativeResultsNumber;
+	private int positiveResultsNumber;
 	private Random random;
 	private boolean switchFlag;
 
-	public MochiDataSetFetcher2(int totalNumberExample) {
+	public MochiDataSetFetcher2() {
 		try {
 			random = new Random();
 			switchFlag = false;
-			this.totalExamples = totalNumberExample;
 			this.numOutcomes = 2;
 			MongoDBConfigWithAuth confArticles = new MongoDBConfigWithAuth("127.0.0.1", 27017, "mochi",
 					"gotohellmyevilex", new String[] { "article" }, null);
@@ -51,6 +51,12 @@ public class MochiDataSetFetcher2 extends BaseDataFetcher {
 			positiveResults = playerPositives.getData(dual);
 			negativeResults = playerNegatives.getData(dual);
 			negativeResultsNumber = (int) negativeResults.size();
+			positiveResultsNumber = (int) positiveResults.size();
+			this.totalExamples = negativeResultsNumber + positiveResultsNumber;
+			positiveResults.close();
+			negativeResults.close();
+			positiveResults = playerPositives.getData(dual);
+			negativeResults = playerNegatives.getData(dual);
 		} catch (SelectedCollectionWithNoIndexesException e) {
 			e.printStackTrace();
 		} catch (NoServerIPException e) {
@@ -77,8 +83,6 @@ public class MochiDataSetFetcher2 extends BaseDataFetcher {
 	@Override
 	public void fetch(int numExamples) {
 		if (!hasMore()) {
-			positiveResults.close();
-			negativeResults.close();
 			throw new IllegalStateException("Unable to get more; there are no more images");
 		}
 		float[][] featureData = new float[numExamples][0];
@@ -86,32 +90,26 @@ public class MochiDataSetFetcher2 extends BaseDataFetcher {
 		int actualExamples = 0;
 		for (int i = 0; i < numExamples; i++, cursor++) {
 			if (!hasMore()) {
-				positiveResults.close();
-				negativeResults.close();
 				break;
 			}
-			byte[] bytesFeatureVec = new byte[512075];
-			float[] featureVec = new float[512075];
+			byte[] bytesFeatureVec = new byte[51275];
+			float[] featureVec = new float[51275];
 			featureData[actualExamples] = featureVec;
 			labelData[actualExamples] = new float[numOutcomes];
 
 			if (switchFlag) {
 				Result negativeResult = playerNegatives.getData(new Duality(), random.nextInt(negativeResultsNumber), 1)
 						.next();
+//				System.out.println(negativeResult.get("data").toString());
 				labelData[actualExamples][0] = 1.0f;
 				generateFeatureVec(bytesFeatureVec, negativeResult);
 				switchFlag = !switchFlag;
 			} else {
-				if (positiveResults.hasNext()) {
-					Result positiveResult = positiveResults.next();
-					labelData[actualExamples][1] = 1.0f;
-					generateFeatureVec(bytesFeatureVec, positiveResult);
-				} else {
-					Result negativeResult = playerNegatives
-							.getData(new Duality(), random.nextInt(negativeResultsNumber), 1).next();
-					labelData[actualExamples][0] = 1.0f;
-					generateFeatureVec(bytesFeatureVec, negativeResult);
-				}
+				Result positiveResult = playerPositives.getData(new Duality(), random.nextInt(positiveResultsNumber), 1)
+						.next();
+//				System.out.println(positiveResult.get("data").toString());
+				labelData[actualExamples][1] = 1.0f;
+				generateFeatureVec(bytesFeatureVec, positiveResult);
 				switchFlag = !switchFlag;
 			}
 
