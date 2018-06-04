@@ -33,7 +33,7 @@ public class MochiDataSetFetcher2 extends BaseDataFetcher {
 	private Random random;
 	private boolean switchFlag;
 
-	public MochiDataSetFetcher2() {
+	public MochiDataSetFetcher2(int totalExamples) {
 		try {
 			random = new Random();
 			switchFlag = false;
@@ -52,7 +52,8 @@ public class MochiDataSetFetcher2 extends BaseDataFetcher {
 			negativeResults = playerNegatives.getData(dual);
 			negativeResultsNumber = (int) negativeResults.size();
 			positiveResultsNumber = (int) positiveResults.size();
-			this.totalExamples = negativeResultsNumber + positiveResultsNumber;
+//			this.totalExamples = negativeResultsNumber + positiveResultsNumber;
+			this.totalExamples = totalExamples;
 			positiveResults.close();
 			negativeResults.close();
 			positiveResults = playerPositives.getData(dual);
@@ -112,27 +113,6 @@ public class MochiDataSetFetcher2 extends BaseDataFetcher {
 				generateFeatureVec(bytesFeatureVec, positiveResult);
 				switchFlag = !switchFlag;
 			}
-
-			// if (negativeExamplesIndex < negativeExamples && negativeResults.hasNext()) {
-			// Result negativeResult = negativeResults.next();
-			// labelData[actualExamples][0] = 1.0f;
-			// generateFeatureVec(bytesFeatureVec, negativeResult);
-			// negativeExamplesIndex++;
-			// } else if (positiveExamplesIndex < positiveExamples &&
-			// positiveResults.hasNext()) {
-			// Result positiveResult = positiveResults.next();
-			// labelData[actualExamples][1] = 1.0f;
-			// generateFeatureVec(bytesFeatureVec, positiveResult);
-			// positiveExamplesIndex++;
-			// } else if (negativeResults.hasNext()) {
-			// Result negativeResult = negativeResults.next();
-			// labelData[actualExamples][0] = 1.0f;
-			// generateFeatureVec(bytesFeatureVec, negativeResult);
-			// } else if (positiveResults.hasNext()) {
-			// Result positiveResult = positiveResults.next();
-			// labelData[actualExamples][1] = 1.0f;
-			// generateFeatureVec(bytesFeatureVec, positiveResult);
-			// }
 
 			for (int j = 0; j < bytesFeatureVec.length; j++) {
 				float v = ((int) bytesFeatureVec[j]) & 0xFF; // byte is loaded as signed -> convert to unsigned
