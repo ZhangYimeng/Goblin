@@ -15,12 +15,35 @@
 		<nd4j.backend>nd4j-cuda-9.1-platform</nd4j.backend>
 	</properties>
 
+	<!--<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>3.1.1</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+							<transformers>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+									<mainClass>person.mochi.goblin.ArticleClassification</mainClass>
+								</transformer>
+							</transformers>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build> -->
+
 	<dependencies>
-		<!-- <dependency>
-			<groupId>org.nd4j</groupId>
-			<artifactId>nd4j-cuda-9.1-platform</artifactId>
-			<version>${nd4j.version}</version>
-		</dependency> -->
+		<!-- <dependency> <groupId>org.nd4j</groupId> <artifactId>nd4j-cuda-9.1-platform</artifactId> 
+			<version>${nd4j.version}</version> </dependency> -->
 		<dependency>
 			<groupId>org.nd4j</groupId>
 			<artifactId>nd4j-native-platform</artifactId>

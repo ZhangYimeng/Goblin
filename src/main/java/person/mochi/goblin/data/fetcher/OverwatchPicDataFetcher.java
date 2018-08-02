@@ -3,7 +3,6 @@ package person.mochi.goblin.data.fetcher;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 
@@ -37,9 +36,10 @@ public class OverwatchPicDataFetcher {
 			}
 			break;
 		}
-		dataSet = FileUtils.listFiles(dataSetFileParent, new String[] { "png", "txt" }, false);
+		setDataSet(FileUtils.listFiles(dataSetFileParent, new String[] { "png", "txt" }, false));
 	}
 
+	@SuppressWarnings("unused")
 	public static void main(String[] args) throws IOException {
 		System.out.println(HOME_DIR);
 		System.out.println(SEPARATOR);
@@ -48,6 +48,14 @@ public class OverwatchPicDataFetcher {
 		System.out.println(HOME_DIR + SEPARATOR + ORG + SEPARATOR + TRAINPATH);
 		System.out.println(HOME_DIR + SEPARATOR + ORG + SEPARATOR + TESTPATH);
 		OverwatchPicDataFetcher op = new OverwatchPicDataFetcher(DataSetType.TRAIN);
+	}
+
+	public Collection<File> getDataSet() {
+		return dataSet;
+	}
+
+	public void setDataSet(Collection<File> dataSet) {
+		this.dataSet = dataSet;
 	}
 
 }
