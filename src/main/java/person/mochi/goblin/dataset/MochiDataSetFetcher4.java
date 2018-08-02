@@ -2,7 +2,6 @@ package person.mochi.goblin.dataset;
 
 import java.util.Arrays;
 
-import org.nd4j.linalg.api.memory.MemoryWorkspace;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.fetcher.BaseDataFetcher;
@@ -28,9 +27,9 @@ public class MochiDataSetFetcher4 extends BaseDataFetcher {
 		try {
 			this.numOutcomes = 600;
 			MongoDBConfigWithAuth confArticles = new MongoDBConfigWithAuth("127.0.0.1", 27017, "mochi",
-					"gotohellmyevilex", new String[] { "articleName" }, null);
-			playerArticles = new MongoDBPlayer(confArticles, "NGBPMF", "Articles");
-			articlesResults = playerArticles.getData(null);
+					"gotohellmyevilex", null, null);
+			playerArticles = new MongoDBPlayer(confArticles, "ZhengYuan_database", "Zhengyuan_collection");
+			articlesResults = playerArticles.getData(null, true);
 			this.totalExamples = (int) (articlesResults.size());
 		} catch (SelectedCollectionWithNoIndexesException e) {
 			e.printStackTrace();
@@ -47,7 +46,7 @@ public class MochiDataSetFetcher4 extends BaseDataFetcher {
 		String[] temp = articleContent.split(",");
 		String[] contentsArray = new String[temp.length - 1];
 		System.arraycopy(articleContent.split(","), 1, contentsArray, 0, articleContent.split(",").length - 1);
-		
+
 		String[] integratedContentsArray = new String[16000];
 		for (int i = 0; i < integratedContentsArray.length; i += contentsArray.length) {
 			if (i + contentsArray.length < integratedContentsArray.length) {
@@ -99,10 +98,9 @@ public class MochiDataSetFetcher4 extends BaseDataFetcher {
 				generateFeatureVec(featureVec, articlesResult);
 			}
 
-//			for (int j = 0; j < bytesFeatureVec.length; j++) {
-//				float v = ((int) bytesFeatureVec[j]) & 0xFF; // byte is loaded as signed -> convert to unsigned
-//				featureVec[j] = v / 255.0f;
-//			}
+//			 for (int j = 0; j < featureVec.length; j++) {
+//				 featureVec[j] = featureVec[j] / 255.0f;
+//			 }
 			actualExamples++;
 		}
 
@@ -110,11 +108,9 @@ public class MochiDataSetFetcher4 extends BaseDataFetcher {
 			featureData = Arrays.copyOfRange(featureData, 0, actualExamples);
 			labelData = Arrays.copyOfRange(labelData, 0, actualExamples);
 		}
-		try (MemoryWorkspace scopedOut = Nd4j.getWorkspaceManager().scopeOutOfWorkspaces()) {
-			INDArray features = Nd4j.create(featureData).detach();
-			INDArray labels = Nd4j.create(labelData).detach();
-			curr = new DataSet(features, labels);
-		}
+		INDArray features = Nd4j.create(featureData);
+		INDArray labels = Nd4j.create(labelData);
+		curr = new DataSet(features, labels);
 
 	}
 
@@ -122,7 +118,7 @@ public class MochiDataSetFetcher4 extends BaseDataFetcher {
 	public void reset() {
 		cursor = 0;
 		curr = null;
-		articlesResults = playerArticles.getData(null);
+		articlesResults = playerArticles.getData(null, true);
 	}
 
 	public static void main(String[] args) {

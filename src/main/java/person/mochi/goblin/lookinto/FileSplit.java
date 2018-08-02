@@ -33,6 +33,7 @@ public class FileSplit extends BaseInputSplit {
 	protected FileSplit(File rootDir, String[] allowFormat, boolean recursive, Random random, boolean runMain) {
 		System.out.println("初始化FileSplit！");
 		this.allowFormat = allowFormat;
+		// recursive表示遍历指定目录的自目录。
 		this.recursive = recursive;
 		this.rootDir = rootDir;
 		if (random != null) {
@@ -43,24 +44,8 @@ public class FileSplit extends BaseInputSplit {
 			this.initialize();
 	}
 
-	public FileSplit(File rootDir) {
-		this(rootDir, null, true, null, true);
-	}
-
-	public FileSplit(File rootDir, Random rng) {
-		this(rootDir, null, true, rng, true);
-	}
-
-	public FileSplit(File rootDir, String[] allowFormat) {
-		this(rootDir, allowFormat, true, null, true);
-	}
-
 	public FileSplit(File rootDir, String[] allowFormat, Random rng) {
 		this(rootDir, allowFormat, true, rng, true);
-	}
-
-	public FileSplit(File rootDir, String[] allowFormat, boolean recursive) {
-		this(rootDir, allowFormat, recursive, null, true);
 	}
 
 	protected void initialize() {

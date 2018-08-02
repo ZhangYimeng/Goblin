@@ -17,20 +17,20 @@ import com.wonder.mongodb.api.exception.SelectedCollectionWithNoIndexesException
 
 import mochi.tool.data.interconversion.DataInterconversionTool;
 
-public class MochiDataSetFetcher5 extends BaseDataFetcher {
+public class SentenceDataSetFetcher extends BaseDataFetcher {
 
 	private static final long serialVersionUID = 5105159674306458714L;
-	private MongoDBPlayer playerArticles;
-	private Results articlesResults;
+	private MongoDBPlayer playerSentences;
+	private Results sentenceResults;
 
-	public MochiDataSetFetcher5() {
+	public SentenceDataSetFetcher() {
 		try {
-			this.numOutcomes = 600;
-			MongoDBConfigWithAuth confArticles = new MongoDBConfigWithAuth("127.0.0.1", 27017, "mochi",
-					"gotohellmyevilex", new String[] { "articleName" }, null);
-			playerArticles = new MongoDBPlayer(confArticles, "NGBPMF", "Articles_predict");
-			articlesResults = playerArticles.getData(null, true);
-			this.totalExamples = (int) (articlesResults.size());
+			this.numOutcomes = 4;
+			MongoDBConfigWithAuth confSentences = new MongoDBConfigWithAuth("127.0.0.1", 27017, "mochi",
+					"gotohellmyevilex", null, null);
+			playerSentences = new MongoDBPlayer(confSentences, "NGBPMFSD", "Blended");
+			sentenceResults = playerSentences.getData(null, true);
+			this.totalExamples = (int) (sentenceResults.size());
 		} catch (SelectedCollectionWithNoIndexesException e) {
 			e.printStackTrace();
 		} catch (NoServerIPException e) {
@@ -41,38 +41,17 @@ public class MochiDataSetFetcher5 extends BaseDataFetcher {
 	}
 
 	private void generateFeatureVec(float[] featureVec, Result result) {
-		String articleContent = result.getString("articleContent");
-		double criticalVal = result.getDouble("criticalVal");
-		String[] temp = articleContent.split(",");
-		String[] contentsArray = new String[temp.length - 1];
-		System.arraycopy(articleContent.split(","), 1, contentsArray, 0, articleContent.split(",").length - 1);
-
-		String[] integratedContentsArray = new String[16000];
-		for (int i = 0; i < integratedContentsArray.length; i += contentsArray.length) {
-			if (i + contentsArray.length < integratedContentsArray.length) {
-				System.arraycopy(contentsArray, 0, integratedContentsArray, i, contentsArray.length);
-			} else {
-				System.arraycopy(contentsArray, 0, integratedContentsArray, i, integratedContentsArray.length - i);
-			}
-		}
-		int featureVecIndex = 0;
-		for (int i = 0; i < integratedContentsArray.length; i++) {
-			if (i % 100 == 0) {
-				featureVec[featureVecIndex] = (float) criticalVal;
-				featureVecIndex++;
-				featureVec[featureVecIndex] = Float.parseFloat(integratedContentsArray[i]);
-				featureVecIndex++;
-			} else {
-				featureVec[featureVecIndex] = Float.parseFloat(integratedContentsArray[i]);
-				featureVecIndex++;
-			}
+		String sentenceContent = result.getString("sentence");
+		int sentenceLength = sentenceContent.length();
+		for (int i = 0; i < sentenceLength; i++) {
+			featureVec[i] = sentenceContent.charAt(i);
 		}
 	}
 
 	@Override
 	public void fetch(int numExamples) {
 		if (!hasMore()) {
-			articlesResults.close();
+			sentenceResults.close();
 			throw new IllegalStateException("Unable to get more; there are no more images");
 		}
 		float[][] featureData = new float[numExamples][0];
@@ -80,28 +59,38 @@ public class MochiDataSetFetcher5 extends BaseDataFetcher {
 		int actualExamples = 0;
 		for (int i = 0; i < numExamples; i++, cursor++) {
 			if (!hasMore()) {
-				articlesResults.close();
+				sentenceResults.close();
 				break;
 			}
-			float[] featureVec = new float[16160];
+			float[] featureVec = new float[200];
 			featureData[actualExamples] = featureVec;
 			labelData[actualExamples] = new float[numOutcomes];
 
-			if (articlesResults.hasNext()) {
-				Result articlesResult = articlesResults.next();
-				int presetAnswer = articlesResult.getInteger("presetAnswer");
-				if (presetAnswer == -1) {
-					labelData[actualExamples][599] = 1.0f;
-				} else {
-					labelData[actualExamples][presetAnswer] = 1.0f;
+			if (sentenceResults.hasNext()) {
+				Result articlesResult = sentenceResults.next();
+				int presetAnswer = articlesResult.getInteger("tag");
+				switch (presetAnswer) {
+				case 0:
+					labelData[actualExamples][presetAnswer] = 1f;
+					break;
+				case 1:
+					labelData[actualExamples][presetAnswer] = 1f;
+					break;
+				case 2:
+					// do nothing
+					break;
+				case 3:
+					labelData[actualExamples][presetAnswer - 1] = 1f;
+					break;
+				case 4:
+					labelData[actualExamples][presetAnswer - 1] = 1f;
+					break;
 				}
 				generateFeatureVec(featureVec, articlesResult);
 			}
 
-			// for (int j = 0; j < bytesFeatureVec.length; j++) {
-			// float v = ((int) bytesFeatureVec[j]) & 0xFF; // byte is loaded as signed ->
-			// convert to unsigned
-			// featureVec[j] = v / 255.0f;
+			// for (int j = 0; j < featureVec.length; j++) {
+			// featureVec[j] = featureVec[j] / 255.0f;
 			// }
 			actualExamples++;
 		}
@@ -113,14 +102,13 @@ public class MochiDataSetFetcher5 extends BaseDataFetcher {
 		INDArray features = Nd4j.create(featureData);
 		INDArray labels = Nd4j.create(labelData);
 		curr = new DataSet(features, labels);
-
 	}
 
 	@Override
 	public void reset() {
 		cursor = 0;
 		curr = null;
-		articlesResults = playerArticles.getData(null, true);
+		sentenceResults = playerSentences.getData(null, true);
 	}
 
 	public static void main(String[] args) {
@@ -147,6 +135,16 @@ public class MochiDataSetFetcher5 extends BaseDataFetcher {
 		}
 		System.out.println(DataInterconversionTool.doubleToBytes(0.9999999999).length);
 		System.out.println(",1,2,3,4,".split(",").length);
+		String s = "safsadf你好sdf， ,，,，,";
+		int length = s.length();
+		System.out.println(length);
+		for (int i = 0; i < length; i++) {
+			System.out.println((float) s.charAt(i));
+		}
+		float[] featureVec = new float[200];
+		for(float f: featureVec) {
+			System.out.print(f);
+		}
 	}
 
 }

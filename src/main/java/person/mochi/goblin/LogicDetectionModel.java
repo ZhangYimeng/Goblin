@@ -17,73 +17,68 @@ import org.nd4j.linalg.lossfunctions.LossFunctions.LossFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import person.mochi.goblin.dataset.MochiDataSetFetcher2;
-import person.mochi.goblin.dataset.MochiDataSetFetcher3;
 import person.mochi.goblin.dataset.OmniDataSetIterator;
+import person.mochi.goblin.dataset.SentenceDataSetFetcher;
 
-public class MLPMnistTwoLayerExample2 {
+public class LogicDetectionModel {
 
-	private static Logger log = LoggerFactory.getLogger(MLPMnistTwoLayerExample2.class);
+	private static Logger log = LoggerFactory.getLogger(LogicDetectionModel.class);
 
 	public static void main(String[] args) throws Exception {
-//		Nd4j.getExecutioner().setProfilingMode(OpExecutioner.ProfilingMode.DISABLED);
-		int outputNum = 2; // number of output classes
-		int batchSize = 16; // batch size for each epoch
+		int outputNum = 4; // number of output classes
+		int batchSize = 358; // batch size for each epoch
 		int rngSeed = 123; // random number seed for reproducibility
-		int numEpochs = 5; // number of epochs to perform
+		int numEpochs = 5000; // number of epochs to perform
 		double rate = 0.01; // learning rate
 
-//		DataSetIterator mnistTrain = new MnistDataSetIterator(batchSize, true, rngSeed);
-//		DataSetIterator mnistTest = new MnistDataSetIterator(batchSize, false, rngSeed);
-		
-		DataSetIterator mnistTrain = new OmniDataSetIterator(batchSize, new MochiDataSetFetcher2(1024));
+		DataSetIterator mnistTrain = new OmniDataSetIterator(batchSize, new SentenceDataSetFetcher());
 		log.info("Build model....");
 		MultiLayerConfiguration conf1 = new NeuralNetConfiguration.Builder().seed(rngSeed)
 				// include a random seed for reproducibility
-				.activation(Activation.SIGMOID)
-				.weightInit(WeightInit.SIGMOID_UNIFORM)
+				.activation(Activation.RELU)
+				.weightInit(WeightInit.XAVIER)
 				.updater(new Nesterovs(rate, 0.98))
 				.l2(rate * 0.005) // regularize learning model
 				.list()
 				.layer(0, new DenseLayer.Builder() // create the first input layer.
 						.activation(Activation.SIGMOID)
-						.nIn(50 * 1024 + 75)
-						.nOut(8400)
+						.nIn(200)
+						.nOut(2000)
 						.build())
 				.layer(1, new DenseLayer.Builder() // create the second hidden layer
 						.activation(Activation.SIGMOID)
-						.nIn(8400)
-						.nOut(1600)
+						.nIn(2000)
+						.nOut(4000)
 						.build())
 				.layer(2, new DenseLayer.Builder() // create the second hidden layer
 						.activation(Activation.SIGMOID)
-						.nIn(1600)
-						.nOut(800)
+						.nIn(4000)
+						.nOut(2000)
 						.build())
 				.layer(3, new DenseLayer.Builder() // create the second hidden layer
 						.activation(Activation.SIGMOID)
-						.nIn(800)
-						.nOut(100)
+						.nIn(2000)
+						.nOut(1000)
 						.build())
 				.layer(4, new DenseLayer.Builder() // create the second hidden layer
+						.activation(Activation.SIGMOID)
+						.nIn(1000)
+						.nOut(500)
+						.build())
+				.layer(5, new DenseLayer.Builder() // create the second hidden layer
+						.activation(Activation.SIGMOID)
+						.nIn(500)
+						.nOut(100)
+						.build())
+				.layer(6, new DenseLayer.Builder() // create the second hidden layer
 						.activation(Activation.SIGMOID)
 						.nIn(100)
 						.nOut(10)
 						.build())
-				.layer(5, new DenseLayer.Builder() // create the second hidden layer
-						.activation(Activation.SIGMOID)
-						.nIn(10)
-						.nOut(5)
-						.build())
-				.layer(6, new DenseLayer.Builder() // create the second hidden layer
-						.activation(Activation.SIGMOID)
-						.nIn(5)
-						.nOut(3)
-						.build())
-				.layer(7, new OutputLayer.Builder(LossFunction.RECONSTRUCTION_CROSSENTROPY) // create outputLayer layer
+				.layer(7, new OutputLayer.Builder(LossFunction.NEGATIVELOGLIKELIHOOD) // create outputLayer layer
 						.activation(Activation.SOFTMAX)
-						.nIn(3)
-						.nOut(outputNum)
+						.nIn(10)
+						.nOut(4)
 						.build())
 				.pretrain(false).backprop(true) // use backpropagation to adjust weights
 				.build();
@@ -99,7 +94,7 @@ public class MLPMnistTwoLayerExample2 {
 		}
 
 		log.info("Evaluate model....");
-		DataSetIterator mnistTest = new OmniDataSetIterator(batchSize, new MochiDataSetFetcher3());
+		DataSetIterator mnistTest = new OmniDataSetIterator(batchSize, new SentenceDataSetFetcher());
 		Evaluation eval = new Evaluation(outputNum); // create an evaluation object with 10 possible classes
 		while (mnistTest.hasNext()) {
 			DataSet next = mnistTest.next();
