@@ -24,74 +24,64 @@ public class ArticleClassification {
 	private static Logger log = LoggerFactory.getLogger(ArticleClassification.class);
 
 	public static void main(String[] args) throws Exception {
-		int outputNum = 1000; // number of output classes
-		int batchSize = 2; // batch size for each epoch
+		int outputNum = 5; // number of output classes
+		int batchSize = 16; // batch size for each epoch
 		int rngSeed = 123; // random number seed for reproducibility
-		int numEpochs = 5; // number of epochs to perform
-		double rate = 0.01; // learning rate
+		int numEpochs = 1000; // number of epochs to perform
+		double rate = 0.02; // learning rate
 		
 		DataSetIterator mnistTrain = new OmniDataSetIterator(batchSize, new ArticleClassificationDataFetcher());
 		log.info("Build model....");
 		MultiLayerConfiguration conf1 = new NeuralNetConfiguration.Builder().seed(rngSeed)
 				// include a random seed for reproducibility
-				.activation(Activation.SIGMOID)
+				.activation(Activation.LEAKYRELU)
 				.weightInit(WeightInit.XAVIER)
 				.updater(new Nesterovs(rate, 0.98))
 				.l2(rate * 0.005) // regularize learning model
 				.list()
 				.layer(0, new DenseLayer.Builder() // create the first input layer.
-						.activation(Activation.SIGMOID)
+						.activation(Activation.LEAKYRELU)
 						.nIn(16000)
-						.nOut(16000)
+						.nOut(4000)
 						.build())
 				.layer(1, new DenseLayer.Builder() // create the second hidden layer
-						.activation(Activation.SIGMOID)
-						.nIn(16000)
-						.nOut(16000)
+						.activation(Activation.LEAKYRELU)
+						.nIn(4000)
+						.nOut(2000)
 						.build())
 				.layer(2, new DenseLayer.Builder() // create the second hidden layer
-						.activation(Activation.SIGMOID)
-						.nIn(16000)
+						.activation(Activation.LEAKYRELU)
+						.nIn(2000)
 						.nOut(1000)
 						.build())
 				.layer(3, new DenseLayer.Builder() // create the second hidden layer
-						.activation(Activation.SIGMOID)
+						.activation(Activation.LEAKYRELU)
 						.nIn(1000)
 						.nOut(500)
 						.build())
 				.layer(4, new DenseLayer.Builder() // create the second hidden layer
-						.activation(Activation.SIGMOID)
+						.activation(Activation.LEAKYRELU)
 						.nIn(500)
-						.nOut(500)
+						.nOut(250)
 						.build())
 				.layer(5, new DenseLayer.Builder() // create the second hidden layer
-						.activation(Activation.SIGMOID)
-						.nIn(500)
-						.nOut(500)
-						.build())
-				.layer(6, new DenseLayer.Builder() // create the second hidden layer
-						.activation(Activation.SIGMOID)
-						.nIn(500)
-						.nOut(250)
-						.build())
-				.layer(7, new DenseLayer.Builder() // create the second hidden layer
-						.activation(Activation.SIGMOID)
-						.nIn(250)
-						.nOut(250)
-						.build())
-				.layer(8, new DenseLayer.Builder() // create the second hidden layer
-						.activation(Activation.SIGMOID)
-						.nIn(250)
-						.nOut(250)
-						.build())
-				.layer(9, new DenseLayer.Builder() // create the second hidden layer
-						.activation(Activation.SIGMOID)
+						.activation(Activation.LEAKYRELU)
 						.nIn(250)
 						.nOut(100)
 						.build())
-				.layer(10, new OutputLayer.Builder(LossFunction.NEGATIVELOGLIKELIHOOD) // create outputLayer layer
-						.activation(Activation.SOFTMAX)
+				.layer(6, new DenseLayer.Builder() // create the second hidden layer
+						.activation(Activation.LEAKYRELU)
 						.nIn(100)
+						.nOut(10)
+						.build())
+				.layer(7, new DenseLayer.Builder() // create the second hidden layer
+						.activation(Activation.LEAKYRELU)
+						.nIn(10)
+						.nOut(10)
+						.build())
+				.layer(8, new OutputLayer.Builder(LossFunction.MEAN_SQUARED_LOGARITHMIC_ERROR) // create outputLayer layer
+						.activation(Activation.SOFTMAX)
+						.nIn(10)
 						.nOut(5)
 						.build())
 				.pretrain(false).backprop(true) // use backpropagation to adjust weights
