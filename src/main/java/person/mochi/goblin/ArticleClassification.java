@@ -27,8 +27,8 @@ public class ArticleClassification {
 		int outputNum = 5; // number of output classes
 		int batchSize = 16; // batch size for each epoch
 		int rngSeed = 123; // random number seed for reproducibility
-		int numEpochs = 1000; // number of epochs to perform
-		double rate = 0.02; // learning rate
+		int numEpochs = 30000; // number of epochs to perform
+		double rate = 0.03; // learning rate
 		
 		DataSetIterator mnistTrain = new OmniDataSetIterator(batchSize, new ArticleClassificationDataFetcher());
 		log.info("Build model....");

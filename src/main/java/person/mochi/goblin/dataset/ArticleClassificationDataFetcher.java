@@ -31,6 +31,7 @@ public class ArticleClassificationDataFetcher extends BaseDataFetcher {
 					"gotohellmyevilex", null, null);
 			playerArticles = new MongoDBPlayer(confArticlesClassificationDatabase, "RimMindTrainDatabase", "CoreTrainData");
 			articlesResults = playerArticles.getData(null, true);
+			articlesResults.sort("tags", 1);
 			this.totalExamples = (int) (articlesResults.size());
 			numOutcomes = (int) playerArticles.advancedDistinct("area", null, String.class).size();
 		} catch (SelectedCollectionWithNoIndexesException e) {
@@ -121,6 +122,7 @@ public class ArticleClassificationDataFetcher extends BaseDataFetcher {
 		curr = null;
 		Duality dual = new Duality();
 		articlesResults = playerArticles.getData(dual, true);
+		articlesResults.sort("tags", 1);
 	}
 	
 	public static void main(String[] args) {
